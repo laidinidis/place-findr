@@ -1,0 +1,92 @@
+<mat-toolbar color="primary">
+  <button
+    mat-icon-button
+    color="acsent"
+    aria-label="Menu"
+    (click)="drawer.toggle()"
+  >
+    <mat-icon>menu</mat-icon>
+  </button>
+  <span>PlaeFindr</span>
+</mat-toolbar>
+
+<div class="container">
+  <mat-drawer-container>
+    <mat-drawer #drawer mode="side" opened="true">
+      <div class="search-container">
+        <mat-form-field>
+          <mat-label>Category</mat-label>
+          <input
+            type="text"
+            placeholder="Select category"
+            aria-label="Category"
+            matInput
+            [formControl]="categoryInput"
+            [matAutocomplete]="category"
+          />
+          <mat-autocomplete
+            #category="matAutocomplete"
+            [displayWith]="categoryDisplay"
+          >
+            <mat-option
+              *ngFor="let category of filteredCategories | async"
+              [value]="category"
+            >
+              {{ category.value }}
+            </mat-option>
+          </mat-autocomplete>
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>Location</mat-label>
+          <input
+            type="text"
+            placeholder="Search location"
+            aria-label="Location"
+            matInput
+            [formControl]="locationInput"
+            [matAutocomplete]="location"
+          />
+          <mat-autocomplete
+            #location="matAutocomplete"
+            [displayWith]="locationDisplay"
+            (optionSelected)="onLocationSelected($event)"
+          >
+            <mat-option *ngFor="let location of locations" [value]="location">
+              {{ location.name }}
+            </mat-option>
+          </mat-autocomplete>
+        </mat-form-field>
+      </div>
+      <div class="list-container">
+        <mat-nav-list>
+          <mat-list-item
+            *ngFor="let marker of markers"
+            (click)="onListingClick(marker)"
+            (mouseover)="onListingHover(marker)"
+          >
+            {{ marker.name }}
+            <mat-divider></mat-divider>
+          </mat-list-item>
+        </mat-nav-list>
+      </div>
+    </mat-drawer>
+
+    <div class="sidenav-content">
+      <google-map [options]="mapOptions" width="100%" height="100%">
+        <map-marker
+          *ngFor="let marker of markers"
+          #mapMarker="mapMarker"
+          [position]="marker.geometry.location"
+          [title]="marker.name"
+          (mapClick)="openInfo(mapMarker, marker.name)"
+          (mapMouseover)="openInfo(mapMarker, marker.name)"
+        >
+        </map-marker>
+        <map-info-window>
+          <h2>{{ infoContent }}</h2>
+        </map-info-window>
+      </google-map>
+    </div>
+  </mat-drawer-container>
+</div>
