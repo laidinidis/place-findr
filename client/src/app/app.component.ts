@@ -7,6 +7,11 @@ import { MapInfoWindow, MapMarker, GoogleMap } from '@angular/google-maps';
 import { PlacesService } from './places.service';
 import PlaceTypes from './plaseTypes';
 
+const mapPhotos = (photos: any[]) =>
+  photos.map((p) => ({
+    path: `https://maps.googleapis.com/maps/api/place/photo?key=AIzaSyAoUfOFS9NKd8b3s6C0AYdEraz7mf64C3E&photoreference=${p.photo_reference}&maxwidth=300`,
+  }));
+
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -24,7 +29,13 @@ export class AppComponent implements OnInit {
   locations: Array<{ name: string }> = [];
   categories = PlaceTypes;
   markers: Array<any> = [];
-  infoContent = '';
+  infoContent: {
+    placeInfo?: any;
+    title?: string;
+    image?: string;
+    photos?: any[];
+  } = {};
+  placeInfo: any = {};
 
   mapOptions = {
     zoom: 14,
@@ -86,19 +97,19 @@ export class AppComponent implements OnInit {
   }
 
   onLocationSelected(event: any): void {
-    console.log({
-      location: this.locationInput.value,
-      category: this.categoryInput.value,
-    });
-
     this.places
       .getPlaces(
         this.categoryInput.value.key,
         `${this.locationInput.value.geometry.location.lat},${this.locationInput.value.geometry.location.lng}`
       )
       .subscribe((data) => {
-        console.log(data);
         this.markers = data.results;
+        const bounds = new google.maps.LatLngBounds();
+
+        for (const marker of this.markers) {
+          bounds.extend(new google.maps.LatLng(marker.geometry.location.lat, marker.geometry.location.lng));
+        }
+        this.map?.fitBounds(bounds);
       });
   }
 
@@ -106,24 +117,43 @@ export class AppComponent implements OnInit {
     console.log(marker);
   }
 
+  setInfoContent(marker: any) {
+    this.infoContent.title = marker.name;
+    this.infoContent.photos = marker.photos ? mapPhotos(marker.photos) : [];
+
+    if (this.placeInfo[marker.place_id]) {
+      this.infoContent.photos = this.placeInfo[marker.place_id].photos
+        ? mapPhotos(this.placeInfo[marker.place_id].photos)
+        : [];
+    } else {
+      this.places.getPlaceInfo(marker.place_id).subscribe((placeInfo) => {
+        this.placeInfo[marker.place_id] = placeInfo.result;
+        this.infoContent.placeInfo = placeInfo.result;
+        this.infoContent.photos = placeInfo.result.photos
+          ? mapPhotos(placeInfo.result.photos)
+          : [];
+      });
+    }
+  }
+
   onListingHover(marker: any): void {
     if (this.infoWindow) {
+      this.setInfoContent(marker);
       this.infoWindow.options = {
         pixelOffset: new google.maps.Size(0, -43),
       };
       this.infoWindow.position = marker.geometry.location;
-      this.infoContent = marker.name;
       this.infoWindow.open();
     }
   }
 
-  openInfo(marker: MapMarker, info: string): void {
-    this.infoContent = info;
+  openInfo(mapMarker: MapMarker, marker: any): void {
     if (this.infoWindow) {
+      this.setInfoContent(marker);
       this.infoWindow.options = {
         pixelOffset: new google.maps.Size(0, 0),
       };
-      this.infoWindow.open(marker);
+      this.infoWindow.open(mapMarker);
     }
   }
 }

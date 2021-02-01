@@ -47,6 +47,7 @@ import { HttpClientModule, HttpClientJsonpModule } from '@angular/common/http';
 import { GoogleMapsModule } from '@angular/google-maps';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { IvyCarouselModule } from 'angular-responsive-carousel';
 
 import { AppComponent } from './app.component';
 
@@ -104,6 +105,7 @@ import { AppComponent } from './app.component';
     OverlayModule,
     FormsModule,
     ReactiveFormsModule,
+    IvyCarouselModule,
   ],
   providers: [],
   bootstrap: [AppComponent],

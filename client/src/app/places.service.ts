@@ -12,7 +12,15 @@ export class PlacesService {
     return this.http.get(`http://localhost:3000/locations?input=${text}`);
   }
 
-  getPlaces( type: string, location: string): Observable<any> {
-    return this.http.get(`http://localhost:3000/places?&type=${type}&location=${location}`);
+  getPlaces(type: string, location: string): Observable<any> {
+    return this.http.get(
+      `http://localhost:3000/places?&type=${type}&location=${location}`
+    );
+  }
+
+  getPlaceInfo(place_id: string): Observable<any> {
+    return this.http.get(
+      `http://localhost:3000/placeinfo?&place_id=${place_id}`
+    );
   }
 }
